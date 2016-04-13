@@ -22,15 +22,17 @@
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="app.css" />
+    <Content Include="main.css" />
     <Content Include="assets\phaser_pixel_small_flat.png" />
+    <Content Include="assets\white-1x1.png" />
     <Content Include="index.html" />
     <Content Include="scripts\phaser-2.4.6\phaser.js" />
     <Content Include="scripts\phaser-2.4.6\phaser.min.js" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="scripts\app.ts" />
+    <TypeScriptCompile Include="scripts\game.ts" />
+    <TypeScriptCompile Include="scripts\tiles.ts" />
     <TypeScriptCompile Include="scripts\phaser-2.4.6\p2.d.ts" />
     <TypeScriptCompile Include="scripts\phaser-2.4.6\phaser.d.ts" />
     <TypeScriptCompile Include="scripts\phaser-2.4.6\pixi.d.ts" />
