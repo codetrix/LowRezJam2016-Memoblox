@@ -21,7 +21,7 @@
         }
     }
 
-    class Tile extends Phaser.Sprite {
+    export class Tile extends Phaser.Sprite {
         constructor(game: Phaser.Game, size: number, x: number = 0, y: number = 0, key?: string | Phaser.RenderTexture | Phaser.BitmapData | PIXI.Texture, frame?: string | number) {
             super(game, x, y, key, frame);
 
@@ -37,7 +37,7 @@
         }
     }
 
-    class TileWithBorder extends Tile {
+    export class TileWithBorder extends Tile {
         private tile: Tile;
 
         constructor(game: Phaser.Game, size: number, borderSize: number, x: number = 0, y: number = 0, key?: string | Phaser.RenderTexture | Phaser.BitmapData | PIXI.Texture, frame?: string | number) {
