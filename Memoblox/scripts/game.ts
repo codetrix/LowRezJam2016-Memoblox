@@ -9,12 +9,12 @@ const MIN_CANVAS_HEIGHT = GAME_HEIGHT;
 const MAX_CANVAS_WIDTH = GAME_WIDTH * GAME_TO_CANVAS_SCALE;
 const MAX_CANVAS_HEIGHT = GAME_HEIGHT * GAME_TO_CANVAS_SCALE;
 
-//const TILE_SIZE = 16;
-const TILE_SIZE = 22;
+const TILE_SIZE = 15;
+//const TILE_SIZE = 20;
 const BORDER_SIZE = 1;
-//const BOARD_SHIFT = GAME_WIDTH % TILE_SIZE;
-const BOARD_WIDTH = Math.ceil(GAME_WIDTH / TILE_SIZE);
-const BOARD_HEIGHT = Math.ceil(GAME_HEIGHT / TILE_SIZE);
+const BOARD_SHIFT = 2;
+const BOARD_WIDTH = Math.ceil((GAME_WIDTH - 2 * BOARD_SHIFT) / TILE_SIZE);
+const BOARD_HEIGHT = Math.ceil((GAME_HEIGHT - 2 * BOARD_SHIFT) / TILE_SIZE);
 
 const COLOR_POOL = [
     ['041929', '0D314C', '225073', '386A90', '5A8EB6'],
@@ -208,7 +208,7 @@ class SimpleGame {
         {
             for (let col = 0; col < BOARD_WIDTH; col++)
             {
-                tile = this.tileFactory.createTile(row * TILE_SIZE, col * TILE_SIZE);
+                tile = this.tileFactory.createTile(BOARD_SHIFT + row * TILE_SIZE, BOARD_SHIFT + col * TILE_SIZE);
                 this.rootGroup.addChild(tile);
 
                 board[row][col] = new BoardTile();
