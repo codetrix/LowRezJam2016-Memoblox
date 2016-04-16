@@ -72,6 +72,9 @@ class SimpleGame {
     private tileFactory: Tiles.TileFactory;
 
     private menuSprite: Phaser.Sprite;
+    private menuSprite1: Phaser.Sprite;
+    private menuSprite2: Phaser.Sprite;
+
     private endScreenSprite: Phaser.Sprite;
 
     private nextLevelTime: number;
@@ -107,6 +110,7 @@ class SimpleGame {
         this.game.load.spritesheet('tile-icons', 'assets/tile-icons.png', 12, 12);
 
         this.game.load.spritesheet('main-menu', 'assets/main-menu-spritesheet.png', 60, 60);
+        this.game.load.spritesheet('main-menu-2', 'assets/main-menu-spritesheet-2.png', 60, 60, 9);
         this.game.load.spritesheet('end-screen', 'assets/end-spritesheet.png', 60, 60);
 
         this.tileFactory = new Tiles.TileFactory(this.game, 'tile');
@@ -128,8 +132,9 @@ class SimpleGame {
         this.endScreenSprite = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'end-screen', 0, this.menuGroup);
         this.endScreenSprite.animations.add('loop', null, 10, true);
 
-        this.menuSprite = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'main-menu', 0, this.menuGroup);
-        this.menuSprite.animations.add('snake', [
+        this.menuSprite1 = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'main-menu', 0, this.menuGroup);
+        this.menuSprite1.visible = false;
+        this.menuSprite1.animations.add('snake', [
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0,
             1, 1, 1, 1,
@@ -140,7 +145,23 @@ class SimpleGame {
             6, 6, 6, 6,
             7, 7, 7,
             8, 8, 8,
-            9, 9, 9], 20, true);
+            9, 9, 9], 40, true);
+
+        this.menuSprite2 = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'main-menu-2', 0, this.menuGroup);
+        this.menuSprite2.visible = false;
+        this.menuSprite2.animations.add('snake', [
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1,
+            2, 2, 2, 2,
+            3, 3, 3, 3,
+            4, 4, 4, 4,
+            5, 5, 5, 5,
+            6, 6, 6, 6,
+            7, 7, 7,
+            8, 8, 8], 40, true);
+
+        this.menuSprite = this.menuSprite2;
     }
 
     update(game)
@@ -192,6 +213,30 @@ class SimpleGame {
             this.menuSprite.animations.play('snake');
 
             this.gameState = GameState.UpdateMenu;
+        }
+
+        if (this.game.input.keyboard.isDown(Phaser.KeyCode.B))
+        {
+            this.menuSprite.animations.stop();
+            this.menuSprite.animations.frame = 0;
+
+            if (this.menuSprite == this.menuSprite1) {
+                this.menuSprite = this.menuSprite2;
+
+                this.menuSprite1.visible = false;
+                this.menuSprite2.visible = true;
+            }
+            else {
+                this.menuSprite = this.menuSprite1;
+
+                this.menuSprite1.visible = true;
+                this.menuSprite2.visible = false;
+            }
+
+            this.menuSprite.animations.play('snake');
+
+            this.game.input.keyboard.reset(false);
+
         }
 
         let point = this.getTapPoint();
