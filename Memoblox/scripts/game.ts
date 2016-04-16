@@ -13,12 +13,6 @@ const BOARD_SHIFT = 2;
 const GAME_INNER_WIDTH = GAME_HEIGHT - 2 * BOARD_SHIFT;
 const GAME_INNER_HEIGHT = GAME_HEIGHT - 2 * BOARD_SHIFT;
 
-//const TILE_SIZE = 15;
-//const TILE_SIZE = 20;
-//const BORDER_SIZE = 1;
-//const BOARD_ROWS = Math.floor(GAME_INNER_WIDTH / TILE_SIZE);
-//const BOARD_COLS = Math.floor(GAME_INNER_HEIGHT / TILE_SIZE);
-
 //const COLOR_POOL_5x2_OLD = ['5A8EB6', '225073', 'F06F8B', 'A42943', 'FFE176', 'B2952D', 'AF57B8', '6C1E74', 'A9EA6B', '63A127'];
 const COLOR_POOL_5x2 = ['b31b27', 'f58500', 'f6c141', '008bb8', '31aa1f', 'bbd709', 'ff362a', 'feffff', '621e69', '1e1e1e'];
 
@@ -54,22 +48,30 @@ const LEVELS = [
 enum GameState
 {
     Intro,
-    Menu,
+    ShowMenu,
+    UpdateMenu,
+    ShowEndScreen,
+    UpdateEndScreen,
     NextLevel,
     InitLevel,
     ChoosePath,
     ShowPath,
     ShowPathLoop,
-    ShowBoard
+    ShowBoard,
+    UpdateBoard
 }
 
 class SimpleGame {
 
     private rootGroup: Phaser.Group;
     private boardGroup: Phaser.Group;
+    private menuGroup: Phaser.Group;
     private tileFactory: Tiles.TileFactory;
 
-    private board: Board;
+    private menuSprite: Phaser.Sprite;
+    private endScreenSprite: Phaser.Sprite;
+
+    private board: Board;    
 
     constructor(gameContainer)
     {
@@ -99,44 +101,41 @@ class SimpleGame {
         this.game.load.image('logo', 'assets/phaser_pixel_small_flat.png');
         this.game.load.image('tile', 'assets/white-1x1.png');
 
+        this.game.load.spritesheet('main-menu', 'assets/main-menu-spritesheet.png', 60, 60);
+        this.game.load.spritesheet('end-screen', 'assets/end-spritesheet.png', 60, 60);
+
         this.tileFactory = new Tiles.TileFactory(this.game, 'tile');
     }
 
     create()
     {
+        this.game.input.maxPointers = 1;
+
         // Create a root group that will contain all game entities  
         this.rootGroup = this.game.add.group();
 
         this.initScalingLogic();
 
-        /*
-        this.rootGroup.removeAll(true, true);
+        this.boardGroup = this.game.add.group(this.rootGroup);
 
-        this.board = this.createBoard();
+        this.menuGroup = this.game.add.group(this.rootGroup);        
 
-        this.overlay = this.tileFactory.createTileWithBorder(BOARD_SHIFT, BOARD_SHIFT, 60/5 << 0, 15/5 << 0);
-        this.overlay.visible = false;
-        this.rootGroup.addChild(this.overlay);
+        this.endScreenSprite = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'end-screen', 0, this.menuGroup);
+        this.endScreenSprite.animations.add('loop', null, 10, true);
 
-        //let colors = this.getColors2x5();
-        let colors = this.getColors5x2();
-        this.shuffle(colors);
-        let startTile = this.colorBoard(this.board, colors);
-
-        let path: Path = this.generatePath(this.board, startTile, 3);
-
-        //this.displayPath(path);
-
-        let red = Phaser.Color.hexToColor("#ff0000");
-        let green = Phaser.Color.hexToColor("#00ff00");
-
-        //this.overlay.borderTint = startTile.tile.tileTint;
-        //this.overlay.tileTint = startTile.tile.tileTint;
-        //this.overlay.visible = true;
-        */
-
-        //let logo = this.game.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'logo', 0, this.rootGroup);
-        //logo.anchor.setTo(0.5, 0.5);
+        this.menuSprite = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'main-menu', 0, this.menuGroup);
+        this.menuSprite.animations.add('snake', [
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1,
+            2, 2, 2, 2,
+            3, 3, 3, 3,
+            4, 4, 4, 4,
+            5, 5, 5, 5,
+            6, 6, 6, 6,
+            7, 7, 7,
+            8, 8, 8,
+            9, 9, 9], 20, true);
     }
 
     update(game)
@@ -146,8 +145,13 @@ class SimpleGame {
             case GameState.Intro:
                 this.introUpdate(game);
                 break;
-            case GameState.Menu:
+            case GameState.ShowMenu:
+            case GameState.UpdateMenu:
                 this.menuUpdate(game);
+                break;
+            case GameState.ShowEndScreen:
+            case GameState.UpdateEndScreen:
+                this.endScreenUpdate(game);
                 break;
             default:
                 this.gameUpdate(game);
@@ -155,24 +159,78 @@ class SimpleGame {
         }
     }
 
-    private introUpdate(game: Phaser.Game) {
-        this.gameState = GameState.Menu;
+    render()
+    {
+        //this.game.debug.pointer(this.game.input.activePointer, false);
     }
 
-    private menuUpdate(game: Phaser.Game) {
-        this.gameState = GameState.NextLevel;
+    private introUpdate(game: Phaser.Game)
+    {
+        this.resetInput();
+        this.gameState = GameState.ShowMenu;
+    }
+
+    private menuUpdate(game: Phaser.Game)
+    {
+        if (this.gameState == GameState.ShowMenu)
+        {
+            this.boardGroup.visible = false;
+            this.menuGroup.visible = true;
+
+            this.menuSprite.visible = true;
+            this.endScreenSprite.visible = false;
+
+            this.resetInput();
+
+            this.menuSprite.animations.stop();
+            this.menuSprite.animations.frame = 0;
+            this.menuSprite.animations.play('snake');
+
+            this.gameState = GameState.UpdateMenu;
+        }
+
+        let point = this.getTapPoint();
+        if (point != null)
+        {
+            this.gameState = GameState.NextLevel;
+        }
+    }
+
+    private endScreenUpdate(game: Phaser.Game)
+    {
+        if (this.gameState == GameState.ShowEndScreen)
+        {
+            this.boardGroup.visible = false;
+            this.menuGroup.visible = true;
+
+            this.menuSprite.visible = false;
+            this.endScreenSprite.visible = true;
+
+            this.endScreenSprite.animations.stop();
+            this.endScreenSprite.animations.frame = 0;
+            this.endScreenSprite.animations.play('loop');
+
+            this.gameState = GameState.UpdateEndScreen;
+        }
+
+        let point = this.getTapPoint();
+        if (point != null)
+        {
+            this.gameState = GameState.ShowMenu;
+        }
     }
 
     private gameUpdate(game: Phaser.Game)
     {
-
-        let levelData = LEVELS[this.level];
+        let levelData;
 
         switch (this.gameState)
         {
             case GameState.NextLevel:
+                this.menuGroup.visible = false;
                 if (this.overlay) this.overlay.visible = false;
-                if (this.boardGroup) this.boardGroup.visible = false;
+
+                this.boardGroup.visible = false;
 
                 if (this.level === undefined)
                 {
@@ -180,30 +238,40 @@ class SimpleGame {
                 }
                 else
                 {
-                    this.level = (this.level + 1) % LEVELS.length;
+                    this.level = this.level + 1;
+
+                    if (this.level > LEVELS.length - 1)
+                    {
+                        this.level = 0;
+
+                        this.gameState = GameState.ShowEndScreen;
+                        break;
+                    }
                 }
 
+                // drop-through
                 this.gameState = GameState.InitLevel;
-                break;
 
             case GameState.InitLevel:
-                this.rootGroup.removeAll(true, true);
+                this.boardGroup.removeAll(true, true);
 
-                this.boardGroup = this.game.add.group(this.rootGroup);
                 this.boardGroup.visible = false;
 
+                levelData = LEVELS[this.level];
                 this.board = this.createBoard(levelData.gridSize);
 
                 this.overlay = this.tileFactory.createTileWithBorder(BOARD_SHIFT, BOARD_SHIFT, 60, 15);
                 this.overlay.visible = false;
-                this.rootGroup.addChild(this.overlay);
+                this.boardGroup.addChild(this.overlay);
 
+                // drop-through
                 this.gameState = GameState.ChoosePath;
-                break;
 
             case GameState.ChoosePath:
 
                 let colors;
+
+                levelData = LEVELS[this.level];
                 switch (levelData.colorMode)
                 {
                     case ColorMode.DOUBLE:
@@ -226,12 +294,12 @@ class SimpleGame {
 
                 this.path = this.generatePath(this.board, startTile, levelData.pathLength);
 
+                // drop-through
                 this.gameState = GameState.ShowPath;
-                break;
 
             case GameState.ShowPath:
+                this.boardGroup.visible = true;
                 this.overlay.visible = true;
-                this.boardGroup.visible = false;
 
                 this.pathTileIndex = 0;
                 this.pathLastUpdate = 0;
@@ -264,12 +332,76 @@ class SimpleGame {
                 this.overlay.visible = false;
                 this.boardGroup.visible = true;
 
-                if (this.game.input.enabled && this.game.input.mousePointer.isDown)
+                this.resetInput();
+
+                // drop-through
+                this.gameState = GameState.UpdateBoard;
+
+            case GameState.UpdateBoard:
+
+                let point = this.getTapPoint();
+                if (point != null)
                 {
+                    let tile: BoardTile = this.getTileAtPoint(point);
+
                     this.gameState = GameState.NextLevel;
                 }
                 break;
         }
+    }
+
+    private resetInput(buttons: boolean = true, movement: boolean = true)
+    {
+        if (buttons && movement) {
+            this.game.input.activePointer.reset();
+        }
+        else if (buttons) {
+            this.game.input.activePointer.resetButtons();
+        }
+        else if (movement) {
+            this.game.input.activePointer.resetMovement();
+        }
+    }
+
+    private getTapPoint(): WorldPoint
+    {
+        let point: WorldPoint = null;
+
+        let activePointer = this.game.input.activePointer;
+
+        if (this.game.input.enabled && activePointer.active)
+        {
+            if (activePointer.withinGame)
+            {
+                if (activePointer.justPressed(1000))
+                {
+                    point = new WorldPoint(this.game.world, activePointer.worldX, activePointer.worldY);
+                }
+            }
+        }
+
+        activePointer.reset();
+
+        return point;
+    }
+
+    private getTileAtPoint(point: WorldPoint): BoardTile
+    {
+        let x = point.pixel.x;
+        let y = point.pixel.y;
+
+        let tile: BoardTile = null;
+        let tileSize = GAME_INNER_WIDTH / this.board.cols;
+
+        if (x >= BOARD_SHIFT && y >= BOARD_SHIFT && x < GAME_WIDTH - BOARD_SHIFT && y <= GAME_WIDTH - BOARD_SHIFT)
+        {
+            let col = (x - BOARD_SHIFT) / tileSize << 0;
+            let row = (y - BOARD_SHIFT) / tileSize << 0;
+
+            return this.board[row][col];
+        }
+
+        return null;
     }
 
     private initScalingLogic()
@@ -295,8 +427,6 @@ class SimpleGame {
         // Floor group position to avoid subpixel placement.
         this.rootGroup.position.x = Math.floor(this.game.width / 2 - zoom * GAME_WIDTH / 2);
         this.rootGroup.scale.set(zoom, zoom);
-
-        console.log("Zoom:", zoom);
     }
 
     private randomInt(min: number, max: number = 0): number
@@ -319,8 +449,6 @@ class SimpleGame {
         {
             colors.push(COLOR_POOL_5x2[i]);
         }
-
-        //console.log("Colors:", colors);
 
         return colors;
     }
@@ -350,8 +478,6 @@ class SimpleGame {
             //colors2.push(COLOR_POOL[pool2][i]);
             colors.push(COLOR_POOL[pool2][i]);
         }
-
-        //console.log("Colors:", colors);
 
         return colors;
     }
@@ -531,13 +657,6 @@ class SimpleGame {
 
         return path;
     }
-
-    private displayPath(path: Path)
-    {
-        path.forEach((val, idx) => {
-            console.log(idx + ": ", val);
-        });
-    }
 }
 
 class Array2D<T> extends Array<Array<T>>
@@ -619,6 +738,18 @@ class BoardTile
     {
         return this.row == other.row && this.col == other.col;
     }
+}
+
+class WorldPoint
+{
+    constructor(world: Phaser.World, x: number, y: number)
+    {
+        this.position = new Phaser.Point(x, y);
+        this.pixel = new Phaser.Point((this.position.x * GAME_WIDTH / world.width) << 0, (this.position.y * GAME_HEIGHT / world.height) << 0);
+    }
+
+    position: Phaser.Point;
+    pixel: Phaser.Point;
 }
 
 window.onload = () =>
