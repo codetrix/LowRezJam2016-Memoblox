@@ -93,6 +93,11 @@
             this.addChild(this.tile);
         }
 
+        equalColor(color: TileColor): boolean
+        {
+            return this.tileTint == color.tileColor && this.backgroundTint == color.backgroundColor;
+        }
+
         correct() {
             super.correct();
             this.borderTint = BORDER_COLOR_ACTIVE;
@@ -128,5 +133,15 @@
         set borderTint(tint: number) {
             this.tint = tint;
         }
+    }
+
+    export class TileColor {
+        constructor(tileColorHex: string, backgroundColorHex: string = tileColorHex) {
+            this.tileColor = Phaser.Color.hexToColor(tileColorHex).color;
+            this.backgroundColor = Phaser.Color.hexToColor(backgroundColorHex).color;
+        }
+
+        tileColor: number;
+        backgroundColor: number;
     }
 }

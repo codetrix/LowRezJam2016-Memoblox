@@ -41,11 +41,11 @@ const LEVELS = [
 
     { level: 5, pathLength: 3, gridSize: 3, colorMode: ColorMode.LIMITED },
     { level: 6, pathLength: 4, gridSize: 4, colorMode: ColorMode.LIMITED },
-    { level: 7, pathLength: 5, gridSize: 5, colorMode: ColorMode.LIMITED }
+    { level: 7, pathLength: 5, gridSize: 5, colorMode: ColorMode.LIMITED },
 
-    //{ level: 8, pathLength: 3, gridSize: 3, colorMode: ColorMode.DOUBLE },
-    //{ level: 9, pathLength: 4, gridSize: 4, colorMode: ColorMode.DOUBLE },
-    //{ level:10, pathLength: 5, gridSize: 4, colorMode: ColorMode.DOUBLE }
+    { level: 8, pathLength: 3, gridSize: 3, colorMode: ColorMode.DOUBLE },
+    { level: 9, pathLength: 4, gridSize: 4, colorMode: ColorMode.DOUBLE },
+    { level: 10, pathLength: 5, gridSize: 5, colorMode: ColorMode.DOUBLE }
 ];
 
 enum GameState
@@ -200,6 +200,8 @@ class SimpleGame {
     {
         if (this.gameState == GameState.ShowMenu)
         {
+            this.level = -1;
+
             this.boardGroup.visible = false;
             this.menuGroup.visible = true;
 
@@ -236,8 +238,19 @@ class SimpleGame {
             this.menuSprite.animations.play('snake');
 
             this.game.input.keyboard.reset(false);
-
         }
+
+        //if (this.game.input.keyboard.isDown(Phaser.KeyCode.S))
+        //{
+        //    if (this.level == 3) {
+        //        this.level = 6;
+        //    }
+        //    else {
+        //        this.level = 3;
+        //    }
+
+        //    this.game.input.keyboard.reset(false);
+        //}
 
         let point = this.getTapPoint();
         if (point != null)
@@ -284,21 +297,14 @@ class SimpleGame {
 
                 this.boardGroup.visible = false;
 
-                if (this.level === undefined)
+                this.level = this.level + 1;
+
+                if (this.level > LEVELS.length - 1)
                 {
                     this.level = 0;
-                }
-                else
-                {
-                    this.level = this.level + 1;
 
-                    if (this.level > LEVELS.length - 1)
-                    {
-                        this.level = 0;
-
-                        this.gameState = GameState.ShowEndScreen;
-                        break;
-                    }
+                    this.gameState = GameState.ShowEndScreen;
+                    break;
                 }
 
                 // drop-through
@@ -329,7 +335,7 @@ class SimpleGame {
                 switch (levelData.colorMode)
                 {
                     case ColorMode.DOUBLE:
-                        // TODO
+                        colors = this.getDoubleColors();
                         break;
 
                     case ColorMode.LIMITED:
@@ -565,21 +571,50 @@ class SimpleGame {
         return (min + Math.random() * (max - min)) << 0;
     }
 
-    private getColors5x2(): Array<string>
+    private getDoubleColors(): Array<TileColor>
     {
-        let colors: Array<string> = [];
+        const REDUCED_POOL_LENGTH = 4;
 
-        let len = COLOR_POOL_5x2.length;
-
-        for (let i = 0; i < len; i++)
+        let indices = [];
+        for (let i = 0; i < REDUCED_POOL_LENGTH; i++)
         {
-            colors.push(COLOR_POOL_5x2[i]);
+            indices.push(i);
+        }
+
+        let shuffledColors = COLOR_POOL_5x2.slice();
+        this.shuffle(shuffledColors);
+
+        let colors: Array<TileColor> = new Array<TileColor>();
+
+        for (let i = 0; i < REDUCED_POOL_LENGTH; i++)
+        {
+            for (let j = 0; j < REDUCED_POOL_LENGTH; j++)
+            {
+                if (i != j)
+                {
+                    colors.push(new Tiles.TileColor(shuffledColors[indices[i]], shuffledColors[indices[j]]));
+                }
+            }
         }
 
         return colors;
     }
 
-    private getColors2x5(): Array<string>
+    private getColors5x2(): Array<TileColor>
+    {
+        let colors: Array<TileColor> = [];
+
+        let len = COLOR_POOL_5x2.length;
+
+        for (let i = 0; i < len; i++)
+        {
+            colors.push(new Tiles.TileColor(COLOR_POOL_5x2[i]));
+        }
+
+        return colors;
+    }
+
+    private getColors2x5(): Array<TileColor>
     {
         let pool1 = this.randomInt(COLOR_POOL.length);
         let pool2 = 0;
@@ -589,20 +624,20 @@ class SimpleGame {
 
         //let colors1: Array<string> = [];
         //let colors2: Array<string> = [];
-        let colors: Array<string> = [];
+        let colors: Array<TileColor> = [];
 
         let len = COLOR_POOL[pool1].length;
         for (let i = 0; i < len; i++)
         {
             //colors1.push(COLOR_POOL[pool1][i]);
-            colors.push(COLOR_POOL[pool1][i]);
+            colors.push(new Tiles.TileColor(COLOR_POOL[pool1][i]));
         }
 
         len = COLOR_POOL[pool2].length;
         for (let i = 0; i < len; i++)
         {
             //colors2.push(COLOR_POOL[pool2][i]);
-            colors.push(COLOR_POOL[pool2][i]);
+            colors.push(new Tiles.TileColor(COLOR_POOL[pool2][i]));
         }
 
         return colors;
@@ -677,12 +712,11 @@ class SimpleGame {
         return board;
     }
 
-    private colorBoard(board: Board, colorPool: Array<string>): BoardTile
+    private colorBoard(board: Board, colorPool: Array<TileColor>): BoardTile
     {
-        let colors = this.convertHexesToColors(colorPool);
-        let color: number;
+        let color: TileColor;
 
-        let startColor = colors.pop();
+        let startColor = colorPool.pop();
         let startRow;
         let startCol;
 
@@ -701,43 +735,54 @@ class SimpleGame {
         {
             for (let col = 0; col < board.cols; col++)
             {
-                color = this.pickValidColor(row, col, board, colors);
+                color = this.pickValidColor(row, col, board, colorPool);
 
-                board[row][col].color = color;
+                if (color != null) {
+                    board[row][col].tile.tileTint = color.tileColor;
+                    board[row][col].tile.backgroundTint = color.backgroundColor;
+                }
+                else {
+                    console.log("Not enough colors!");
+                }
             }
         }
 
-        board[startRow][startCol].tile.tileTint = startColor;
+        board[startRow][startCol].tile.tileTint = startColor.tileColor;
+        board[startRow][startCol].tile.backgroundTint = startColor.backgroundColor;
 
         return board[startRow][startCol];
     }
 
-    private pickValidColor(row: number, col: number, board: Board, colors: Array<number>): number
+    private pickValidColor(row: number, col: number, board: Board, colors: Array<TileColor>): TileColor
     {
         this.shuffle(colors);
-        for (let c, i = 0; i < colors.length; i++)
+        for (let c: TileColor, i = 0; i < colors.length; i++)
         {
             c = colors[i];
 
-            if (row >= 1 && col >= 1 && board[row - 1][col - 1].color == c) continue;
+            if (row >= 1 && col >= 1 && board[row - 1][col - 1].equalColor(c)) continue;
 
-            if(row >= 1) {
-                if (board[row - 1][col].color == c) continue;
-                if (row >= 2 && board[row - 2][col].color == c) continue;
-                if (col >= 1 && board[row - 1][col - 1].color == c) continue;
-                if (col < board.cols - 1 && board[row - 1][col + 1].color == c) continue;
+            if (row >= 1) {
+                if (board[row - 1][col].equalColor(c)) continue;
+                if (row >= 2 && board[row - 2][col].equalColor(c)) continue;
+                if (col >= 1 && board[row - 1][col - 1].equalColor(c)) continue;
+                if (col < board.cols - 1 && board[row - 1][col + 1].equalColor(c)) continue;
             }
 
             if (col >= 1) {
-                if (board[row][col - 1].color == c) continue;
-                if (col >= 2 && board[row][col - 2].color == c) continue;
+                if (board[row][col - 1].equalColor(c)) continue;
+                if (col >= 2 && board[row][col - 2].equalColor(c)) continue;
             }
 
             return c;
         }
 
-        return 0;
-        //return colors[this.randomInt(colors.length)];
+        return null;
+    }
+
+    private colorMatch(tile: BoardTile, color)
+    {
+
     }
 
     private generatePath(board: Board, startTile: BoardTile, length: number): Path
@@ -923,6 +968,8 @@ class Path extends Array<BoardTile>
     }
 }
 
+type TileColor = Tiles.TileColor;
+
 class BoardTile
 {
     constructor(row, col)
@@ -944,6 +991,11 @@ class BoardTile
     set color(color: number)
     {
         this.tile.tileTint = color;
+    }
+
+    equalColor(color: TileColor): boolean
+    {
+        return this.tile.equalColor(color);
     }
 
     equals(other: BoardTile)
