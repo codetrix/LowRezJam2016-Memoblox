@@ -444,7 +444,7 @@ class SimpleGame {
                         if (this.path.next() == null) {
                             this.game.input.enabled = false;
 
-                            this.nextLevelTime = this.game.time.now + 1500;
+                            this.nextLevelTime = this.game.time.now + 2000;
                         }
                     }
                     else
@@ -706,9 +706,9 @@ class SimpleGame {
                 this.boardGroup.addChild(tile);
 
                 let button = this.game.add.sprite(0, 0, 'tile-icons');
-                button.animations.add('correct', [1, 1, 0], 1, false);
-                button.animations.add('wrong', [2, 3, 2, 3, 2, 0], 2, false);
-                button.animations.add('restart', [2, 3, 2, 3, 2, 4], 2, false);
+                button.animations.add('correct', [1, 2, 1, 2, 1, 0], 2, false);
+                button.animations.add('wrong', [3, 4, 3, 4, 3, 0], 2, false);
+                button.animations.add('restart', [3, 4, 3, 4, 3, 5], 2, false);
 
                 tile.setOverlay(button);
 
