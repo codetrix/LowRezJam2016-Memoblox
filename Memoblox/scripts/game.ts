@@ -13,6 +13,9 @@ const BOARD_SHIFT = 2;
 const GAME_INNER_WIDTH = GAME_HEIGHT - 2 * BOARD_SHIFT;
 const GAME_INNER_HEIGHT = GAME_HEIGHT - 2 * BOARD_SHIFT;
 
+const BORDER_COLOR_INACTIVE = Phaser.Color.hexToColor('3E3E3E').color;
+const BORDER_COLOR_ACTIVE = Phaser.Color.hexToColor('009292').color;
+ 
 //const COLOR_POOL_5x2_OLD = ['5A8EB6', '225073', 'F06F8B', 'A42943', 'FFE176', 'B2952D', 'AF57B8', '6C1E74', 'A9EA6B', '63A127'];
 const COLOR_POOL_5x2 = ['b31b27', 'f58500', 'f6c141', '008bb8', '31aa1f', 'bbd709', 'ff362a', 'feffff', '621e69', '1e1e1e'];
 
@@ -118,7 +121,7 @@ class SimpleGame {
 
         this.boardGroup = this.game.add.group(this.rootGroup);
 
-        this.menuGroup = this.game.add.group(this.rootGroup);        
+        this.menuGroup = this.game.add.group(this.rootGroup);
 
         this.endScreenSprite = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'end-screen', 0, this.menuGroup);
         this.endScreenSprite.animations.add('loop', null, 10, true);
@@ -258,9 +261,9 @@ class SimpleGame {
                 this.boardGroup.visible = false;
 
                 levelData = LEVELS[this.level];
-                this.board = this.createBoard(levelData.gridSize);
+                this.board = this.createBoard(levelData.gridSize, levelData.colorMode);
 
-                this.overlay = this.tileFactory.createTileWithBorder(BOARD_SHIFT, BOARD_SHIFT, 60, 15);
+                this.overlay = this.tileFactory.createTileWithBorder(BOARD_SHIFT, BOARD_SHIFT, 60, 1, levelData.colorMode == ColorMode.DOUBLE ? 15 : 0);
                 this.overlay.visible = false;
                 this.boardGroup.addChild(this.overlay);
 
@@ -319,7 +322,8 @@ class SimpleGame {
                     {
                         let tile = this.path[this.pathTileIndex++];
 
-                        this.overlay.borderTint = tile.tile.tileTint;
+                        this.overlay.borderTint = tile.tile.borderTint;
+                        this.overlay.backgroundTint = tile.tile.backgroundTint;
                         this.overlay.tileTint = tile.tile.tileTint;
                         this.overlay.visible = true;
 
@@ -511,20 +515,29 @@ class SimpleGame {
         return value << 0;
     }
 
-    private createBoard(gridSize: number): Board
+    private createBoard(gridSize: number, colorMode: ColorMode): Board
     {
-        let board: Board = new Array2D<BoardTile>(gridSize, gridSize);
-        let tile: Tiles.Tile;
+        let board: Board = new Board(gridSize, gridSize, colorMode);
+
+        let tile: Tiles.TileWithBorder;
 
         let tileSize = Math.floor(GAME_INNER_WIDTH / gridSize);
+        let borderSize = 1;
+
         this.tileFactory.size = tileSize;
-        this.tileFactory.borderSize = this.roundToOdd(tileSize / 2);
+        this.tileFactory.borderSize = borderSize;
+        this.tileFactory.innerBorderSize = 0;
+        if (colorMode == ColorMode.DOUBLE)
+        {
+            this.tileFactory.innerBorderSize = (tileSize * 0.25) << 0;
+        }
 
         for (let row = 0; row < board.rows; row++)
         {
             for (let col = 0; col < board.cols; col++)
             {
-                tile = this.tileFactory.createTile(BOARD_SHIFT + row * tileSize, BOARD_SHIFT + col * tileSize);
+                tile = this.tileFactory.createTileWithBorder(BOARD_SHIFT + row * tileSize, BOARD_SHIFT + col * tileSize);
+                tile.borderTint = BORDER_COLOR_INACTIVE;
                 this.boardGroup.addChild(tile);
 
                 board[row][col] = new BoardTile(row, col);
@@ -685,7 +698,17 @@ class Array2D<T> extends Array<Array<T>>
     }
 }
 
-type Board = Array2D<BoardTile>
+class Board extends Array2D<BoardTile>
+{
+    constructor(rows: number, cols: number, colorMode: ColorMode)
+    {
+        super(rows, cols);
+
+        this.colorMode = colorMode;
+    }
+
+    colorMode: ColorMode;
+}
 
 class Path extends Array<BoardTile>
 {
@@ -723,7 +746,7 @@ class BoardTile
 
     row: number;
     col: number;
-    tile: Tiles.Tile;
+    tile: Tiles.TileWithBorder;
 
     get color()
     {

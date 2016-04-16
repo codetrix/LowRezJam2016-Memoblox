@@ -6,6 +6,7 @@
 
         public size: number = 8;
         public borderSize: number = 1;
+        public innerBorderSize: number = 2;
 
         constructor(game: Phaser.Game, key: string | Phaser.RenderTexture | Phaser.BitmapData | PIXI.Texture) {
             this.game = game;
@@ -16,8 +17,9 @@
             return new Tile(this.game, size, x, y, this.key);
         }
 
-        createTileWithBorder(x: number = 0, y: number = 0, size: number = this.size, borderSize: number = this.borderSize): TileWithBorder {
-            return new TileWithBorder(this.game, size, borderSize, x, y, this.key);
+        createTileWithBorder(x: number = 0, y: number = 0, size: number = this.size,
+            borderSize: number = this.borderSize, innerBorderSize: number = this.innerBorderSize): TileWithBorder {
+            return new TileWithBorder(this.game, size, borderSize, innerBorderSize, x, y, this.key);
         }
     }
 
@@ -39,15 +41,21 @@
 
     export class TileWithBorder extends Tile {
         private tile: Tile;
+        private backgroundTile: Tile;
 
-        constructor(game: Phaser.Game, size: number, borderSize: number, x: number = 0, y: number = 0, key?: string | Phaser.RenderTexture | Phaser.BitmapData | PIXI.Texture, frame?: string | number) {
+        constructor(game: Phaser.Game, size: number, borderSize: number, innerBorderSize: number = 0, x: number = 0, y: number = 0, key?: string | Phaser.RenderTexture | Phaser.BitmapData | PIXI.Texture, frame?: string | number) {
             super(game, size, x, y, key, frame);
 
             let innerScale = (size - 2 * borderSize) / size;
             let innerOffset = borderSize / size;
 
-            this.tile = new Tile(game, innerScale, innerOffset, innerOffset, key, frame);
+            let tileScale = (size - 2 * (borderSize + innerBorderSize)) / size;
+            let tileOffset = (borderSize + innerBorderSize) / size;
 
+            this.backgroundTile = new Tile(game, innerScale, innerOffset, innerOffset, key, frame);
+            this.addChild(this.backgroundTile);
+
+            this.tile = new Tile(game, tileScale, tileOffset, tileOffset, key, frame);
             this.addChild(this.tile);
         }
 
@@ -57,6 +65,16 @@
 
         set tileTint(tint: number) {
             this.tile.tint = tint;
+        }
+
+        get backgroundTint()
+        {
+            return this.backgroundTile.tint;
+        }
+
+        set backgroundTint(tint: number)
+        {
+            this.backgroundTile.tint = tint;
         }
 
         get borderTint() {
