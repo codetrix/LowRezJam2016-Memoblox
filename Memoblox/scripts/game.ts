@@ -17,7 +17,7 @@ const BORDER_COLOR_INACTIVE = Phaser.Color.hexToColor('3E3E3E').color;
 const BORDER_COLOR_ACTIVE = Phaser.Color.hexToColor('009292').color;
  
 //const COLOR_POOL_5x2_OLD = ['5A8EB6', '225073', 'F06F8B', 'A42943', 'FFE176', 'B2952D', 'AF57B8', '6C1E74', 'A9EA6B', '63A127'];
-const COLOR_POOL_5x2 = ['b31b27', 'f58500', 'f6c141', '008bb8', '31aa1f', 'bbd709', 'ff362a', 'feffff', '621e69', '1e1e1e'];
+const COLOR_POOL_5x2 = ['b31b27', 'f58500', 'f6c141', '008bb8', '31aa1f', 'bbd709', 'ff362a', 'feffff', '621e69', '1a1a1a'];
 
 const COLOR_POOL = [
     ['041929', '0D314C', '225073', '386A90', '5A8EB6'],
