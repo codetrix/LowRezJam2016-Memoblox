@@ -699,8 +699,8 @@ class SimpleGame {
 
                 let button = this.game.add.sprite(0, 0, 'tile-icons');
                 button.animations.add('correct', [1, 1, 0], 1, false);
-                button.animations.add('wrong', [2, 2, 0], 1, false);
-                button.animations.add('restart', [2, 2, 3], 1, false);
+                button.animations.add('wrong', [2, 3, 2, 3, 2, 0], 2, false);
+                button.animations.add('restart', [2, 3, 2, 3, 2, 4], 2, false);
 
                 tile.setOverlay(button);
 
