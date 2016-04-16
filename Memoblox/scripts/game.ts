@@ -74,6 +74,8 @@ class SimpleGame {
     private menuSprite: Phaser.Sprite;
     private endScreenSprite: Phaser.Sprite;
 
+    private nextLevelTime: number;
+
     private board: Board;    
 
     constructor(gameContainer)
@@ -95,14 +97,14 @@ class SimpleGame {
 
     path: Path;
 
-    pathTileIndex: number;
-
     pathLastUpdate: number;
 
     preload()
     {
         this.game.load.image('logo', 'assets/phaser_pixel_small_flat.png');
         this.game.load.image('tile', 'assets/white-1x1.png');
+
+        this.game.load.spritesheet('tile-icons', 'assets/tile-icons.png', 12, 12);
 
         this.game.load.spritesheet('main-menu', 'assets/main-menu-spritesheet.png', 60, 60);
         this.game.load.spritesheet('end-screen', 'assets/end-spritesheet.png', 60, 60);
@@ -230,6 +232,8 @@ class SimpleGame {
         switch (this.gameState)
         {
             case GameState.NextLevel:
+                this.game.input.enabled = true;
+
                 this.menuGroup.visible = false;
                 if (this.overlay) this.overlay.visible = false;
 
@@ -274,6 +278,8 @@ class SimpleGame {
 
                 let colors;
 
+                this.board.reset();
+
                 levelData = LEVELS[this.level];
                 switch (levelData.colorMode)
                 {
@@ -304,7 +310,8 @@ class SimpleGame {
                 this.boardGroup.visible = true;
                 this.overlay.visible = true;
 
-                this.pathTileIndex = 0;
+                this.board.softReset();
+                this.path.restart();
                 this.pathLastUpdate = 0;
 
                 // drop-through
@@ -314,18 +321,21 @@ class SimpleGame {
                 let now = this.game.time.now;
                 if (this.pathLastUpdate == 0 || (now - this.pathLastUpdate) > 1000)
                 {
-                    if (this.pathTileIndex >= this.path.length)
+                    if (this.path.current == null)
                     {
                         this.gameState = GameState.ShowBoard;
                     }
                     else
                     {
-                        let tile = this.path[this.pathTileIndex++];
+                        let tile = this.path.current;
+                        this.path.next();
 
                         this.overlay.borderTint = tile.tile.borderTint;
                         this.overlay.backgroundTint = tile.tile.backgroundTint;
                         this.overlay.tileTint = tile.tile.tileTint;
                         this.overlay.visible = true;
+
+                        console.log(tile);
 
                         this.pathLastUpdate = now;
                     }
@@ -336,7 +346,10 @@ class SimpleGame {
                 this.overlay.visible = false;
                 this.boardGroup.visible = true;
 
+                this.game.input.enabled = true;
                 this.resetInput();
+
+                this.path.restart();
 
                 // drop-through
                 this.gameState = GameState.UpdateBoard;
@@ -348,7 +361,71 @@ class SimpleGame {
                 {
                     let tile: BoardTile = this.getTileAtPoint(point);
 
-                    this.gameState = GameState.NextLevel;
+                    if (tile == null) return;
+
+                    console.log(tile);
+                    console.log(this.path);
+
+                    if (this.path.seen(tile)) {
+                        // same
+                        console.log("Same");
+
+                    } else if (this.path.current == tile) {
+                        // new
+                        console.log("Next");
+
+                        tile.tile.correct();
+
+                        if (this.board.restartTile != null)
+                        {
+                            this.board.restartTile.tile.stop();
+                            this.board.restartTile = null;
+                        }
+
+                        if (this.path.next() == null) {
+                            this.game.input.enabled = false;
+
+                            this.nextLevelTime = this.game.time.now + 1500;
+                        }
+                    }
+                    else
+                    {
+                        this.board.perfect = false;
+
+                        if (this.board.restartTile == null) {
+                            this.board.restartTile = tile;
+                            tile.tile.restart();
+                        }
+                        else if (tile == this.board.restartTile)
+                        {
+                            this.gameState = GameState.ShowPath;
+                        }
+                        else {
+                            tile.tile.wrong();
+                        }
+
+                        // wrong
+                        if (this.path.contains(tile)) {
+                            console.log("Wrong - In path");
+                        }
+                        else {
+                            console.log("Wrong - Not in path");
+                        }
+                    }
+                }
+
+                if (this.nextLevelTime > 0 && this.game.time.now > this.nextLevelTime)
+                {
+                    this.nextLevelTime = 0;
+
+                    if (this.board.perfect)
+                    {
+                        this.gameState = GameState.NextLevel;
+                    }
+                    else
+                    {
+                        this.gameState = GameState.ChoosePath;
+                    }
                 }
                 break;
         }
@@ -536,9 +613,16 @@ class SimpleGame {
         {
             for (let col = 0; col < board.cols; col++)
             {
-                tile = this.tileFactory.createTileWithBorder(BOARD_SHIFT + row * tileSize, BOARD_SHIFT + col * tileSize);
+                tile = this.tileFactory.createTileWithBorder(BOARD_SHIFT + col * tileSize, BOARD_SHIFT + row * tileSize);
                 tile.borderTint = BORDER_COLOR_INACTIVE;
                 this.boardGroup.addChild(tile);
+
+                let button = this.game.add.sprite(0, 0, 'tile-icons');
+                button.animations.add('correct', [1, 1, 0], 1, false);
+                button.animations.add('wrong', [2, 2, 0], 1, false);
+                button.animations.add('restart', [2, 2, 3], 1, false);
+
+                tile.setOverlay(button);
 
                 board[row][col] = new BoardTile(row, col);
                 board[row][col].tile = tile;
@@ -708,10 +792,36 @@ class Board extends Array2D<BoardTile>
     }
 
     colorMode: ColorMode;
+
+    restartTile: BoardTile;
+
+    perfect: boolean;
+
+    reset()
+    {
+        this.perfect = true;
+
+        this.softReset();
+    }
+
+    softReset()
+    {
+        this.restartTile = null;
+
+        for (let row = 0; row < this.rows; row++)
+        {
+            for (let col = 0; col < this.cols; col++)
+            {
+                this[row][col].tile.stop();
+            }
+        }
+    }
 }
 
 class Path extends Array<BoardTile>
 {
+    private iter = 0;
+
     constructor()
     {
         super(6);
@@ -722,9 +832,41 @@ class Path extends Array<BoardTile>
         return this[0];
     }
 
+    get current(): BoardTile
+    {
+        if (this.iter < this.length) {
+            return this[this.iter];
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    next(): BoardTile
+    {
+        this.iter++;
+        return this.current;
+    }
+
+    restart()
+    {
+        this.iter = 0;
+    }
+
+    seen(tile: BoardTile): boolean
+    {
+        return this.containsBefore(tile, this.iter);
+    }
+
     contains(tile: BoardTile)
     {
-        for (let i = 0; i < this.length; i++)
+        return this.containsBefore(tile, this.length);
+    }
+
+    private containsBefore(tile: BoardTile, length: number)
+    {
+        for (let i = 0; i < length; i++)
         {
             if (tile.equals(this[i]))
             {
@@ -746,12 +888,14 @@ class BoardTile
 
     row: number;
     col: number;
+
     tile: Tiles.TileWithBorder;
 
     get color()
     {
         return this.tile.tileTint;
     }
+
     set color(color: number)
     {
         this.tile.tileTint = color;

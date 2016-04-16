@@ -24,6 +24,8 @@
     }
 
     export class Tile extends Phaser.Sprite {
+        private overlay: Phaser.Sprite;
+
         constructor(game: Phaser.Game, size: number, x: number = 0, y: number = 0, key?: string | Phaser.RenderTexture | Phaser.BitmapData | PIXI.Texture, frame?: string | number) {
             super(game, x, y, key, frame);
 
@@ -36,6 +38,38 @@
 
         set tileTint(tint: number) {
             this.tint = tint;
+        }
+
+        setOverlay(overlay: Phaser.Sprite)
+        {
+            if (this.overlay != null)
+            {
+                this.overlay.destroy(true);
+            }
+
+            this.overlay = overlay;
+            this.overlay.scale.setTo(1 / 12);
+            this.addChild(overlay);
+        }
+
+        correct()
+        {
+            this.overlay.play('correct');
+        }
+
+        wrong()
+        {
+            this.overlay.play('wrong');
+        }
+
+        restart()
+        {
+            this.overlay.play('restart');
+        }
+
+        stop() {
+            this.overlay.animations.stop();
+            this.overlay.frame = 0;
         }
     }
 
@@ -57,6 +91,16 @@
 
             this.tile = new Tile(game, tileScale, tileOffset, tileOffset, key, frame);
             this.addChild(this.tile);
+        }
+
+        correct() {
+            super.correct();
+            this.borderTint = BORDER_COLOR_ACTIVE;
+        }
+
+        stop() {
+            super.stop();
+            this.borderTint = BORDER_COLOR_INACTIVE;
         }
 
         get tileTint() {
