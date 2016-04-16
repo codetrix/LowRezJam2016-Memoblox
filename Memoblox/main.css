@@ -7,3 +7,7 @@
 span {
     font-style: italic;
 }
+
+canvas {
+    margin: 0 auto;
+}
