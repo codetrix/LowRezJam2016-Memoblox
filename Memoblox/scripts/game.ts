@@ -102,6 +102,8 @@ class SimpleGame {
 
     pathLastUpdate: number;
 
+    pathUpdateTimeout: number;
+
     preload()
     {
         this.game.load.image('logo', 'assets/phaser_pixel_small_flat.png');
@@ -364,13 +366,14 @@ class SimpleGame {
                 this.board.softReset();
                 this.path.restart();
                 this.pathLastUpdate = 0;
+                this.pathUpdateTimeout = 1500;
 
                 // drop-through
                 this.gameState = GameState.ShowPathLoop;
 
             case GameState.ShowPathLoop:
                 let now = this.game.time.now;
-                if (this.pathLastUpdate == 0 || (now - this.pathLastUpdate) > 1000)
+                if (this.pathLastUpdate == 0 || (now - this.pathLastUpdate) > this.pathUpdateTimeout)
                 {
                     if (this.path.current == null)
                     {
@@ -387,6 +390,11 @@ class SimpleGame {
                         this.overlay.visible = true;
 
                         console.log(tile);
+
+                        if (this.pathLastUpdate > 0)
+                        {
+                            this.pathUpdateTimeout = 1000;
+                        }
 
                         this.pathLastUpdate = now;
                     }
