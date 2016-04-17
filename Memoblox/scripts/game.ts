@@ -175,12 +175,13 @@ class SimpleGame {
 
         this.endScreenBackgroundSprite = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'end-screen', 0, this.menuGroup);
         this.endScreenBackgroundSprite.animations.add('static', [0, 1], 10, true);
+        this.endScreenBackgroundSprite.visible = false;
 
         this.endScreenSprite = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'end-screen', 2, this.menuGroup);
         this.endScreenSprite.animations.add('loop', [2, 3, 4, 5, 6, 7, 8, 9], 15, true);
+        this.endScreenSprite.visible = false;
 
         this.menuSprite = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'main-menu', 0, this.menuGroup);
-        this.menuSprite.visible = false;
 
         let fps = 10;
         let a;
