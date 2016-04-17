@@ -330,18 +330,6 @@ class SimpleGame {
             this.game.input.keyboard.reset(false);
         }
 
-        //if (this.game.input.keyboard.isDown(Phaser.KeyCode.S))
-        //{
-        //    if (this.level == 3) {
-        //        this.level = 6;
-        //    }
-        //    else {
-        //        this.level = 3;
-        //    }
-
-        //    this.game.input.keyboard.reset(false);
-        //}
-
         let point = this.getTapPoint();
         if (point != null)
         {
@@ -580,13 +568,37 @@ class SimpleGame {
                     }
                 }
 
-                if (DEBUG && this.game.input.keyboard.isDown(Phaser.KeyCode.E))
+                if (DEBUG)
                 {
-                    this.nextLevelTime = 0;
+                    if (this.game.input.keyboard.isDown(Phaser.KeyCode.S))
+                    {
+                        this.game.input.keyboard.reset(false);
 
-                    this.level = LEVELS.length - 1;
-                    this.gameState = GameState.NextLevel;
-                    break;
+                        if (this.level <= 3) {
+                            this.level = 3;
+                        }
+                        else if (this.level <= 6) {
+                            this.level = 6;
+                        }
+                        else {
+                            this.level = LEVELS.length - 1;
+                        }
+
+                        this.nextLevelTime = 0;
+                        this.gameState = GameState.NextLevel;
+                        break;
+                    }
+                    else if (this.game.input.keyboard.isDown(Phaser.KeyCode.E))
+                    {
+                        this.game.input.keyboard.reset(false);
+
+                        this.level = LEVELS.length - 1;
+
+                        this.nextLevelTime = 0;
+                        this.gameState = GameState.NextLevel;
+
+                        break;
+                    }
                 }
 
                 if (this.nextLevelTime > 0 && this.game.time.now > this.nextLevelTime)
