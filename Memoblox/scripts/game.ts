@@ -87,6 +87,9 @@ class SimpleGame {
     private soundReady: boolean = false;
     private static: Phaser.Sound;
 
+    private notes: Array<Phaser.Sound>;
+    private nextNoteTime: number = 0;
+
     private nextLevelTime: number;
 
     private board: Board;    
@@ -116,7 +119,12 @@ class SimpleGame {
 
     preload()
     {
-        this.game.load.audio('static', 'assets/audio/static.ogg');
+        this.game.load.audio('static', ['assets/audio/static.ogg']);
+        this.game.load.audio('note-1', 'assets/audio/background01.ogg');
+        this.game.load.audio('note-2', 'assets/audio/background02.ogg');
+        this.game.load.audio('note-3', 'assets/audio/background03.ogg');
+        this.game.load.audio('note-4', 'assets/audio/background04.ogg');
+        this.game.load.audio('note-5', 'assets/audio/background05.ogg');
 
         this.game.load.image('logo', 'assets/phaser_pixel_small_flat.png');
         this.game.load.image('tile', 'assets/white-1x1.png');
@@ -180,6 +188,14 @@ class SimpleGame {
         this.static = this.game.add.audio('static', 0.6, true);
         this.static.loop = true;
 
+        this.notes = [
+            this.game.add.audio('note-1'),
+            this.game.add.audio('note-2'),
+            this.game.add.audio('note-3'),
+            this.game.add.audio('note-4'),
+            this.game.add.audio('note-5')
+        ];
+
         //  Using setDecodedCallback we can be notified when ALL sounds are ready for use.
         //  The audio files could decode in ANY order, we can never be sure which it'll be.
         this.game.sound.setDecodedCallback([this.static], this.onSoundDecoded, this);
@@ -228,7 +244,9 @@ class SimpleGame {
         if (this.gameState == GameState.ShowMenu)
         {
             this.level = -1;
-            this.static.stop();
+
+            this.game.sound.stopAll();
+            this.nextNoteTime == 0
 
             this.boardGroup.visible = false;
             this.menuGroup.visible = true;
@@ -243,6 +261,18 @@ class SimpleGame {
             this.menuSprite.animations.play('snake');
 
             this.gameState = GameState.UpdateMenu;
+        }
+
+        if (this.nextNoteTime == 0 && this.soundReady)
+        {
+            this.nextNoteTime = this.game.time.now + 500;
+        }
+
+        if (this.nextNoteTime > 0 && this.game.time.now > this.nextNoteTime) {
+            let note = this.notes[this.randomInt(this.notes.length)];
+            note.play();
+
+            this.nextNoteTime = this.game.time.now + this.randomInt(500, 3000);
         }
 
         if (this.game.input.keyboard.isDown(Phaser.KeyCode.B))
@@ -283,6 +313,8 @@ class SimpleGame {
         let point = this.getTapPoint();
         if (point != null)
         {
+            this.game.sound.stopAll();
+
             this.gameState = GameState.NextLevel;
         }
     }
