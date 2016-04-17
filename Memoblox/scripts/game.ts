@@ -485,7 +485,7 @@ class SimpleGame {
                         this.overlay.tileTint = tile.tile.tileTint;
                         this.overlay.visible = true;
 
-                        console.log(tile);
+                        //console.log(tile);
 
                         if (this.pathLastUpdate > 0)
                         {
@@ -520,16 +520,14 @@ class SimpleGame {
 
                     if (tile == null) return;
 
-                    console.log(tile);
-                    console.log(this.path);
+                    //console.log(tile);
+                    //console.log(this.path);
 
                     if (this.path.seen(tile)) {
                         // same
-                        console.log("Same");
 
                     } else if (this.path.current == tile) {
                         // new
-                        console.log("Next");
 
                         this.board.fade();
 
@@ -551,6 +549,7 @@ class SimpleGame {
                     }
                     else
                     {
+                        // wrong
                         this.board.perfect = false;
 
                         if (this.board.restartTile == null) {
@@ -568,14 +567,6 @@ class SimpleGame {
                             tile.tile.frame = 0;
                             tile.tile.wrong();
                             this.wrong.play(null, null, INGAME_WRONG_SOUND_VOLUME);
-                        }
-
-                        // wrong
-                        if (this.path.contains(tile)) {
-                            console.log("Wrong - In path");
-                        }
-                        else {
-                            console.log("Wrong - Not in path");
                         }
                     }
                 }
