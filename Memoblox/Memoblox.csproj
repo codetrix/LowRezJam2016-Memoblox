@@ -22,6 +22,13 @@
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="assets\audio\background01.m4a" />
+    <Content Include="assets\audio\background02.m4a" />
+    <Content Include="assets\audio\background03.m4a" />
+    <Content Include="assets\audio\background04.m4a" />
+    <Content Include="assets\audio\background05.m4a" />
+    <Content Include="assets\audio\static.m4a" />
+    <Content Include="assets\audio\wrong.m4a" />
     <Content Include="assets\main-menu-spritesheet-2.png" />
     <Content Include="assets\end-spritesheet.png" />
     <Content Include="assets\main-menu-spritesheet.png" />
@@ -43,13 +50,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="scripts\phaser-2.4.6\phaser.map" />
-    <Content Include="assets\audio\static.ogg" />
-    <Content Include="assets\audio\background01.ogg" />
-    <Content Include="assets\audio\background02.ogg" />
-    <Content Include="assets\audio\background03.ogg" />
-    <Content Include="assets\audio\background04.ogg" />
-    <Content Include="assets\audio\background05.ogg" />
-    <Content Include="assets\audio\wrong.ogg" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

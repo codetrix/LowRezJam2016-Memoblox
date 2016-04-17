@@ -132,13 +132,13 @@ class SimpleGame {
 
     preload()
     {
-        this.game.load.audio('wrong', ['assets/audio/wrong.ogg']);
-        this.game.load.audio('static', ['assets/audio/static.ogg']);
-        this.game.load.audio('note-1', 'assets/audio/background01.ogg');
-        this.game.load.audio('note-2', 'assets/audio/background02.ogg');
-        this.game.load.audio('note-3', 'assets/audio/background03.ogg');
-        this.game.load.audio('note-4', 'assets/audio/background04.ogg');
-        this.game.load.audio('note-5', 'assets/audio/background05.ogg');
+        this.game.load.audio('wrong', ['assets/audio/wrong.m4a']);
+        this.game.load.audio('static', ['assets/audio/static.m4a']);
+        this.game.load.audio('note-1', 'assets/audio/background01.m4a');
+        this.game.load.audio('note-2', 'assets/audio/background02.m4a');
+        this.game.load.audio('note-3', 'assets/audio/background03.m4a');
+        this.game.load.audio('note-4', 'assets/audio/background04.m4a');
+        this.game.load.audio('note-5', 'assets/audio/background05.m4a');
 
         this.game.load.image('logo', 'assets/phaser_pixel_small_flat.png');
         this.game.load.image('tile', 'assets/white-1x1.png');
