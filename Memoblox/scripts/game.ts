@@ -551,8 +551,9 @@ class SimpleGame {
                             this.gameState = GameState.ShowPath;
                         }
                         else {
+                            tile.tile.stop();
+                            tile.tile.frame = 0;
                             tile.tile.wrong();
-
                             this.wrong.play(null, null, INGAME_WRONG_SOUND_VOLUME);
                         }
 
