@@ -49,7 +49,7 @@ const MENU_SOUND_VOLUME = 1;
 const PATH_SOUND_VOLUME = 0.4;
 const INGAME_SOUND_VOLUME = 0.4;
 const INGAME_WRONG_SOUND_VOLUME = 0.2;
-const ENDSCREEN_STATIC_VOLUME = 0.6;
+const ENDSCREEN_STATIC_VOLUME = 0.3;
 
 const LEVELS = [
     { level: 1, pathLength: 3, gridSize: 3, colorMode: ColorMode.PLENTY },
