@@ -1,4 +1,6 @@
-﻿const GAME_WIDTH = 64;
+﻿const DEBUG = 1;
+
+const GAME_WIDTH = 64;
 const GAME_HEIGHT = 64;
 
 const GAME_TO_CANVAS_SCALE = 10;
@@ -539,6 +541,15 @@ class SimpleGame {
                             console.log("Wrong - Not in path");
                         }
                     }
+                }
+
+                if (DEBUG && this.game.input.keyboard.isDown(Phaser.KeyCode.E))
+                {
+                    this.nextLevelTime = 0;
+
+                    this.level = LEVELS.length - 1;
+                    this.gameState = GameState.NextLevel;
+                    break;
                 }
 
                 if (this.nextLevelTime > 0 && this.game.time.now > this.nextLevelTime)
