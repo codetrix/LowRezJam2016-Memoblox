@@ -25,8 +25,10 @@ const BORDER_COLORS_ACTIVE = [
     Phaser.Color.hexToColor('273636').color
 ];
  
-//const COLOR_POOL_5x2_OLD = ['5A8EB6', '225073', 'F06F8B', 'A42943', 'FFE176', 'B2952D', 'AF57B8', '6C1E74', 'A9EA6B', '63A127'];
-const COLOR_POOL_5x2 = ['b31b27', 'f58500', 'f6c141', '008bb8', '31aa1f', 'bbd709', 'ff362a', 'feffff', '621e69', '1a1a1a'];
+
+const DOUBLE_COLOR_POOL = ['B31B27', 'F58500', 'F4E511', '008BB8', '0D314C', '31AA1F', 'F06F8B', '621E69', 'FFFFFF', '1A1A1A'];
+
+const COLOR_POOL_5x2 = ['b31b27', 'f58500', 'f6c141', '008bb8', '31aa1f', 'bbd709', 'ff362a', 'ffffff', '621e69', '1a1a1a'];
 
 const COLOR_POOL = [
     ['041929', '0D314C', '225073', '386A90', '5A8EB6'],
@@ -734,7 +736,7 @@ class SimpleGame {
             indices.push(i);
         }
 
-        let shuffledColors = COLOR_POOL_5x2.slice();
+        let shuffledColors = DOUBLE_COLOR_POOL.slice();
         this.shuffle(shuffledColors);
 
         let colors: Array<TileColor> = new Array<TileColor>();
