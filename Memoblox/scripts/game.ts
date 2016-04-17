@@ -301,7 +301,7 @@ class SimpleGame {
                 let newSnakeIdx = this.randomInt(this.snakes.length);
                 if (newSnakeIdx == this.lastSnakeIndex)
                 {
-                    newSnakeIdx = (newSnakeIdx + 1) & this.snakes.length;
+                    newSnakeIdx = (newSnakeIdx + 1) % this.snakes.length;
                 }
 
                 this.lastSnakeIndex = newSnakeIdx;
