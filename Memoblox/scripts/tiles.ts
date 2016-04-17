@@ -56,7 +56,7 @@
 
         correct()
         {
-            this.overlay.play('correct');
+            //this.overlay.play('correct');
         }
 
         wrong()
