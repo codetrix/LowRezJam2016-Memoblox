@@ -1,4 +1,4 @@
-﻿const DEBUG = 1;
+﻿const DEBUG = false;
 
 const GAME_WIDTH = 64;
 const GAME_HEIGHT = 64;
@@ -141,13 +141,13 @@ class SimpleGame {
     {
         this.game.load.audio('wrong', ['assets/audio/wrong.m4a']);
         this.game.load.audio('static', ['assets/audio/static.m4a']);
+
         this.game.load.audio('note-1', 'assets/audio/background01.m4a');
         this.game.load.audio('note-2', 'assets/audio/background02.m4a');
         this.game.load.audio('note-3', 'assets/audio/background03.m4a');
         this.game.load.audio('note-4', 'assets/audio/background04.m4a');
         this.game.load.audio('note-5', 'assets/audio/background05.m4a');
 
-        this.game.load.image('logo', 'assets/phaser_pixel_small_flat.png');
         this.game.load.image('tile', 'assets/white-1x1.png');
 
         this.game.load.spritesheet('tile-icons-12', 'assets/tile-icons-12x12.png', 12, 12);
@@ -671,6 +671,7 @@ class SimpleGame {
     {
         // Set min and max allowed game window size
         this.game.scale.setMinMax(MIN_CANVAS_WIDTH, MIN_CANVAS_HEIGHT, MAX_CANVAS_WIDTH, MAX_CANVAS_HEIGHT);
+        this.game.scale.setUserScale(1.0, 1.0);
 
         // Set the scaling mode to show the whole game window when resizing
         this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
