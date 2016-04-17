@@ -102,6 +102,7 @@ class SimpleGame {
     private notes: Array<Phaser.Sound>;
     private lastNoteIdx: number = -1;
     private nextNoteTime: number = 0;
+    private lastAnimatonPlayTime: number = 0;
 
     private nextLevelTime: number;
 
@@ -183,7 +184,7 @@ class SimpleGame {
             6, 6, 6, 6,
             7, 7, 7,
             8, 8, 8,
-            9, 9, 9], 40, true);
+            9, 9, 9, 0], 40, true);
 
         this.menuSprite2 = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'main-menu-2', 0, this.menuGroup);
         this.menuSprite2.visible = false;
@@ -197,7 +198,7 @@ class SimpleGame {
             5, 5, 5, 5,
             6, 6, 6, 6,
             7, 7, 7,
-            8, 8, 8], 40, true);
+            8, 8, 8, 0], 40, true);
 
         this.menuSprite = this.menuSprite2;
 
@@ -262,6 +263,8 @@ class SimpleGame {
 
     private menuUpdate(game: Phaser.Game)
     {
+        let now = this.game.time.now;
+
         if (this.gameState == GameState.ShowMenu)
         {
             this.level = -1;
@@ -281,6 +284,7 @@ class SimpleGame {
             this.menuSprite.animations.stop();
             this.menuSprite.animations.frame = 0;
             this.menuSprite.animations.play('snake');
+            this.lastAnimatonPlayTime = now;
 
             this.gameState = GameState.UpdateMenu;
         }
@@ -288,13 +292,20 @@ class SimpleGame {
         //if (this.nextNoteTime == 0 && this.soundReady)
         if (this.nextNoteTime == 0)
         {
-            this.nextNoteTime = this.game.time.now + 500;
+            this.nextNoteTime = now + 500;
         }
 
-        if (this.nextNoteTime > 0 && this.game.time.now > this.nextNoteTime) {
+        if (this.nextNoteTime > 0 && now > this.nextNoteTime) {
             this.playRandomNote(MENU_SOUND_VOLUME);
-            this.nextNoteTime = this.game.time.now + this.randomInt(MENU_SOUND_REPEAT_MIN_DELAY, MENU_SOUND_REPEAT_MAX_DELAY);
+            this.nextNoteTime = now + this.randomInt(MENU_SOUND_REPEAT_MIN_DELAY, MENU_SOUND_REPEAT_MAX_DELAY);
         }
+
+        //if (this.nextNoteTime - now < 500 && now - this.lastAnimatonPlayTime > 1300) {
+        //    this.menuSprite.animations.stop();
+        //    this.menuSprite.animations.frame = 0;
+        //    this.menuSprite.animations.play('snake');
+        //    this.lastAnimatonPlayTime = now;
+        //}
 
         if (this.game.input.keyboard.isDown(Phaser.KeyCode.B))
         {
@@ -922,11 +933,6 @@ class SimpleGame {
         }
 
         return null;
-    }
-
-    private colorMatch(tile: BoardTile, color)
-    {
-
     }
 
     private generatePath(board: Board, startTile: BoardTile, length: number): Path
