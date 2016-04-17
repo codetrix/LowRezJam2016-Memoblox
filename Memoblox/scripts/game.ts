@@ -42,6 +42,9 @@ enum ColorMode {
     DOUBLE
 }
 
+const MENU_SOUND_REPEAT_MIN_DELAY = 300;
+const MENU_SOUND_REPEAT_MAX_DELAY = 9000;
+
 const MENU_SOUND_VOLUME = 1;
 const PATH_SOUND_VOLUME = 0.4;
 const INGAME_SOUND_VOLUME = 0.4;
@@ -288,7 +291,7 @@ class SimpleGame {
 
         if (this.nextNoteTime > 0 && this.game.time.now > this.nextNoteTime) {
             this.playRandomNote(MENU_SOUND_VOLUME);
-            this.nextNoteTime = this.game.time.now + this.randomInt(500, 7000);
+            this.nextNoteTime = this.game.time.now + this.randomInt(MENU_SOUND_REPEAT_MIN_DELAY, MENU_SOUND_REPEAT_MAX_DELAY);
         }
 
         if (this.game.input.keyboard.isDown(Phaser.KeyCode.B))
