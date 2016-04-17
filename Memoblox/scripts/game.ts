@@ -77,6 +77,9 @@ class SimpleGame {
 
     private endScreenSprite: Phaser.Sprite;
 
+    private soundReady: boolean = false;
+    private static: Phaser.Sound;
+
     private nextLevelTime: number;
 
     private board: Board;    
@@ -106,6 +109,8 @@ class SimpleGame {
 
     preload()
     {
+        this.game.load.audio('static', 'assets/audio/static.ogg');
+
         this.game.load.image('logo', 'assets/phaser_pixel_small_flat.png');
         this.game.load.image('tile', 'assets/white-1x1.png');
 
@@ -164,6 +169,19 @@ class SimpleGame {
             8, 8, 8], 40, true);
 
         this.menuSprite = this.menuSprite2;
+
+        this.static = this.game.add.audio('static', 0.6, true);
+        this.static.loop = true;
+
+        //  Using setDecodedCallback we can be notified when ALL sounds are ready for use.
+        //  The audio files could decode in ANY order, we can never be sure which it'll be.
+        this.game.sound.setDecodedCallback([this.static], this.onSoundDecoded, this);
+    }
+
+    private onSoundDecoded()
+    {
+        this.soundReady = true;
+        console.log("Decoded");
     }
 
     update(game)
@@ -203,6 +221,7 @@ class SimpleGame {
         if (this.gameState == GameState.ShowMenu)
         {
             this.level = -1;
+            this.static.stop();
 
             this.boardGroup.visible = false;
             this.menuGroup.visible = true;
@@ -270,6 +289,14 @@ class SimpleGame {
 
             this.menuSprite.visible = false;
             this.endScreenSprite.visible = true;
+
+            if (this.soundReady) {
+                if (this.static.isPlaying) {
+                    this.static.stop();
+                }
+
+                this.static.play();
+            }
 
             this.endScreenSprite.animations.stop();
             this.endScreenSprite.animations.frame = 0;

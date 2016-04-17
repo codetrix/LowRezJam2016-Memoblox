@@ -25,6 +25,7 @@
     <Content Include="assets\main-menu-spritesheet-2.png" />
     <Content Include="assets\end-spritesheet.png" />
     <Content Include="assets\main-menu-spritesheet.png" />
+    <Content Include="assets\audio\static.wav" />
     <Content Include="assets\tile-icons.png" />
     <Content Include="main.css" />
     <Content Include="assets\phaser_pixel_small_flat.png" />
@@ -43,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="scripts\phaser-2.4.6\phaser.map" />
+    <Content Include="assets\audio\static.ogg" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
