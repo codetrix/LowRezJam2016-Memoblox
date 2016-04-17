@@ -143,7 +143,9 @@ class SimpleGame {
         this.game.load.image('logo', 'assets/phaser_pixel_small_flat.png');
         this.game.load.image('tile', 'assets/white-1x1.png');
 
-        this.game.load.spritesheet('tile-icons', 'assets/tile-icons.png', 12, 12);
+        this.game.load.spritesheet('tile-icons-12', 'assets/tile-icons-12x12.png', 12, 12);
+        this.game.load.spritesheet('tile-icons-15', 'assets/tile-icons-15x15.png', 15, 15);
+        this.game.load.spritesheet('tile-icons-20', 'assets/tile-icons-20x20.png', 20, 20);
 
         this.game.load.spritesheet('main-menu', 'assets/main-menu-spritesheet.png', 60, 60);
         this.game.load.spritesheet('main-menu-2', 'assets/main-menu-spritesheet-2.png', 60, 60, 9);
@@ -827,12 +829,7 @@ class SimpleGame {
 
                 this.boardGroup.addChild(tile);
 
-                let button = this.game.add.sprite(0, 0, 'tile-icons');
-                button.animations.add('correct', [1, 2, 1, 2, 1, 0], 2, false);
-                button.animations.add('wrong', [4, 3, 3, 4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 0], 10, false);
-                button.animations.add('restart', [4, 3, 3, 4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5], 10, false);
-
-                tile.setOverlay(button);
+                tile.setOverlay(this.createOverlay(tileSize));
 
                 board[row][col] = new BoardTile(row, col);
                 board[row][col].tile = tile;
@@ -840,6 +837,23 @@ class SimpleGame {
         }
 
         return board;
+    }
+
+    private createOverlay(size: number): Phaser.Sprite
+    {
+        let safeSize = size << 0;
+
+        if (safeSize >= 20) safeSize = 20;
+        else if (safeSize >= 15) safeSize = 15;
+        else safeSize = 12;
+
+        let button = this.game.add.sprite(0, 0, 'tile-icons-' + safeSize);
+
+        button.animations.add('correct', [1, 2, 1, 2, 1, 0], 2, false);
+        button.animations.add('wrong', [4, 3, 3, 4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 0], 10, false);
+        button.animations.add('restart', [4, 3, 3, 4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5], 10, false);
+
+        return button;
     }
 
     private colorBoard(board: Board, colorPool: Array<TileColor>): BoardTile

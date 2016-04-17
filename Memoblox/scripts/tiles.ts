@@ -25,10 +25,12 @@
 
     export class Tile extends Phaser.Sprite {
         private overlay: Phaser.Sprite;
+        private size: number;
 
         constructor(game: Phaser.Game, size: number, x: number = 0, y: number = 0, key?: string | Phaser.RenderTexture | Phaser.BitmapData | PIXI.Texture, frame?: string | number) {
             super(game, x, y, key, frame);
 
+            this.size = size;
             this.scale.setTo(size);
         }
 
@@ -48,7 +50,7 @@
             }
 
             this.overlay = overlay;
-            this.overlay.scale.setTo(1 / 12);
+            this.overlay.scale.setTo(1 / this.size);
             this.addChild(overlay);
         }
 

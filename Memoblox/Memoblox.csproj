@@ -32,7 +32,9 @@
     <Content Include="assets\main-menu-spritesheet-2.png" />
     <Content Include="assets\end-spritesheet.png" />
     <Content Include="assets\main-menu-spritesheet.png" />
-    <Content Include="assets\tile-icons.png" />
+    <Content Include="assets\tile-icons-12x12.png" />
+    <Content Include="assets\tile-icons-15x15.png" />
+    <Content Include="assets\tile-icons-20x20.png" />
     <Content Include="main.css" />
     <Content Include="assets\phaser_pixel_small_flat.png" />
     <Content Include="assets\white-1x1.png" />
