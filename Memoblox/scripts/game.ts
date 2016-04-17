@@ -42,9 +42,9 @@ enum ColorMode {
 
 const LEVELS = [
     { level: 1, pathLength: 3, gridSize: 3, colorMode: ColorMode.PLENTY },
-    { level: 2, pathLength: 3, gridSize: 4, colorMode: ColorMode.PLENTY },
-    { level: 3, pathLength: 4, gridSize: 4, colorMode: ColorMode.PLENTY },
-    { level: 4, pathLength: 4, gridSize: 5, colorMode: ColorMode.PLENTY },
+    { level: 2, pathLength: 4, gridSize: 4, colorMode: ColorMode.PLENTY },
+    { level: 3, pathLength: 4, gridSize: 5, colorMode: ColorMode.PLENTY },
+    { level: 4, pathLength: 5, gridSize: 5, colorMode: ColorMode.PLENTY },
 
     { level: 5, pathLength: 3, gridSize: 3, colorMode: ColorMode.LIMITED },
     { level: 6, pathLength: 4, gridSize: 4, colorMode: ColorMode.LIMITED },
