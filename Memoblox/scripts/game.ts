@@ -13,8 +13,15 @@ const BOARD_SHIFT = 2;
 const GAME_INNER_WIDTH = GAME_HEIGHT - 2 * BOARD_SHIFT;
 const GAME_INNER_HEIGHT = GAME_HEIGHT - 2 * BOARD_SHIFT;
 
-const BORDER_COLOR_INACTIVE = Phaser.Color.hexToColor('3E3E3E').color;
-const BORDER_COLOR_ACTIVE = Phaser.Color.hexToColor('009292').color;
+//const BORDER_COLOR_INACTIVE = Phaser.Color.hexToColor('3E3E3E').color;
+const BORDER_COLOR_INACTIVE = Phaser.Color.hexToColor('2B2B2B').color;
+const BORDER_COLORS_ACTIVE = [
+    Phaser.Color.hexToColor('009292').color,
+    Phaser.Color.hexToColor('0D7373').color,
+    Phaser.Color.hexToColor('155F5F').color,
+    Phaser.Color.hexToColor('1E4A4A').color,
+    Phaser.Color.hexToColor('273636').color
+];
  
 //const COLOR_POOL_5x2_OLD = ['5A8EB6', '225073', 'F06F8B', 'A42943', 'FFE176', 'B2952D', 'AF57B8', '6C1E74', 'A9EA6B', '63A127'];
 const COLOR_POOL_5x2 = ['b31b27', 'f58500', 'f6c141', '008bb8', '31aa1f', 'bbd709', 'ff362a', 'feffff', '621e69', '1a1a1a'];
@@ -460,6 +467,8 @@ class SimpleGame {
                         // new
                         console.log("Next");
 
+                        this.board.fade();
+
                         tile.tile.correct();
 
                         if (this.board.restartTile != null)
@@ -729,7 +738,9 @@ class SimpleGame {
             for (let col = 0; col < board.cols; col++)
             {
                 tile = this.tileFactory.createTileWithBorder(BOARD_SHIFT + col * tileSize, BOARD_SHIFT + row * tileSize);
-                tile.borderTint = BORDER_COLOR_INACTIVE;
+                tile.setInactiveBorderColor(BORDER_COLOR_INACTIVE);
+                tile.setActiveBorderColors(BORDER_COLORS_ACTIVE);
+
                 this.boardGroup.addChild(tile);
 
                 let button = this.game.add.sprite(0, 0, 'tile-icons');
@@ -921,6 +932,15 @@ class Board extends Array2D<BoardTile>
     restartTile: BoardTile;
 
     perfect: boolean;
+
+    fade()
+    {
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
+                this[row][col].tile.fade();
+            }
+        }
+    }
 
     reset()
     {

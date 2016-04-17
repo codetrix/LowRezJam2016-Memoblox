@@ -77,6 +77,10 @@
         private tile: Tile;
         private backgroundTile: Tile;
 
+        private activeBorderColorIndex: number = -1;
+        private activeBorderColors: Array<number> = null;
+        private inactiveBorderColor: number = null;
+
         constructor(game: Phaser.Game, size: number, borderSize: number, innerBorderSize: number = 0, x: number = 0, y: number = 0, key?: string | Phaser.RenderTexture | Phaser.BitmapData | PIXI.Texture, frame?: string | number) {
             super(game, size, x, y, key, frame);
 
@@ -93,6 +97,20 @@
             this.addChild(this.tile);
         }
 
+        setActiveBorderColors(activeColors: Array<number>)
+        {
+            this.activeBorderColors = activeColors;
+            this.activeBorderColorIndex = -1;
+        }
+
+        setInactiveBorderColor(inactiveColor: number) {
+            this.inactiveBorderColor = inactiveColor;
+            if (this.inactiveBorderColor != null)
+            {
+                this.borderTint = this.inactiveBorderColor;
+            }
+        }
+
         equalColor(color: TileColor): boolean
         {
             return this.tileTint == color.tileColor && this.backgroundTint == color.backgroundColor;
@@ -100,12 +118,44 @@
 
         correct() {
             super.correct();
-            this.borderTint = BORDER_COLOR_ACTIVE;
+
+            if (this.activeBorderColorIndex < 0 && this.activeBorderColors.length > 0)
+            {
+                this.activeBorderColorIndex = 0;
+            }
+
+            if (this.activeBorderColorIndex >= 0)
+            {
+                this.borderTint = this.activeBorderColors[this.activeBorderColorIndex];
+            }
         }
 
-        stop() {
+        fade()
+        {
+            if (this.activeBorderColorIndex < 0 || this.activeBorderColorIndex == this.activeBorderColors.length - 1)
+            {
+                if (this.inactiveBorderColor != null)
+                {
+                   this.borderTint = this.inactiveBorderColor;
+                }
+            }
+            else
+            {
+                this.activeBorderColorIndex++;
+                this.borderTint = this.activeBorderColors[this.activeBorderColorIndex];
+            }
+        }
+
+        stop()
+        {
             super.stop();
-            this.borderTint = BORDER_COLOR_INACTIVE;
+
+            this.activeBorderColorIndex = -1;
+
+            if (this.inactiveBorderColor != null)
+            {
+                this.borderTint = this.inactiveBorderColor;
+            }
         }
 
         get tileTint() {
