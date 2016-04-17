@@ -95,6 +95,7 @@ class SimpleGame {
     private menuSprite1: Phaser.Sprite;
     private menuSprite2: Phaser.Sprite;
 
+    private endScreenBackgroundSprite: Phaser.Sprite;
     private endScreenSprite: Phaser.Sprite;
 
     private soundReady: boolean = false;
@@ -170,8 +171,11 @@ class SimpleGame {
 
         this.menuGroup = this.game.add.group(this.rootGroup);
 
-        this.endScreenSprite = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'end-screen', 0, this.menuGroup);
-        this.endScreenSprite.animations.add('loop', null, 10, true);
+        this.endScreenBackgroundSprite = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'end-screen', 0, this.menuGroup);
+        this.endScreenBackgroundSprite.animations.add('static', [0, 1], 10, true);
+
+        this.endScreenSprite = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'end-screen', 2, this.menuGroup);
+        this.endScreenSprite.animations.add('loop', [2, 3, 4, 5, 6, 7, 8, 9], 15, true);
 
         this.menuSprite1 = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'main-menu', 0, this.menuGroup);
         this.menuSprite1.visible = false;
@@ -280,6 +284,7 @@ class SimpleGame {
 
             this.menuSprite.visible = true;
             this.endScreenSprite.visible = false;
+            this.endScreenBackgroundSprite.visible = false;
 
             this.resetInput();
 
@@ -348,6 +353,7 @@ class SimpleGame {
 
             this.menuSprite.visible = false;
             this.endScreenSprite.visible = true;
+            this.endScreenBackgroundSprite.visible = true;
 
             this.game.sound.stopAll();
             this.static.play();
@@ -355,6 +361,10 @@ class SimpleGame {
             this.endScreenSprite.animations.stop();
             this.endScreenSprite.animations.frame = 0;
             this.endScreenSprite.animations.play('loop');
+
+            this.endScreenBackgroundSprite.animations.stop();
+            this.endScreenBackgroundSprite.animations.frame = 0;
+            this.endScreenBackgroundSprite.animations.play('static');
 
             this.gameState = GameState.UpdateEndScreen;
         }
