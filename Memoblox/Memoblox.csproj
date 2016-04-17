@@ -29,7 +29,6 @@
     <Content Include="assets\audio\background05.m4a" />
     <Content Include="assets\audio\static.m4a" />
     <Content Include="assets\audio\wrong.m4a" />
-    <Content Include="assets\main-menu-spritesheet-2.png" />
     <Content Include="assets\end-spritesheet.png" />
     <Content Include="assets\main-menu-spritesheet.png" />
     <Content Include="assets\tile-icons-12x12.png" />

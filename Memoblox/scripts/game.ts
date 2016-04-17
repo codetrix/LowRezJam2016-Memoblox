@@ -107,6 +107,9 @@ class SimpleGame {
     private nextNoteTime: number = 0;
     private lastAnimatonPlayTime: number = 0;
 
+    private snakes: Array<Phaser.Animation>;
+    private lastSnakeIndex: number = -1;
+
     private nextLevelTime: number;
 
     private board: Board;    
@@ -152,7 +155,6 @@ class SimpleGame {
         this.game.load.spritesheet('tile-icons-20', 'assets/tile-icons-20x20.png', 20, 20);
 
         this.game.load.spritesheet('main-menu', 'assets/main-menu-spritesheet.png', 60, 60);
-        this.game.load.spritesheet('main-menu-2', 'assets/main-menu-spritesheet-2.png', 60, 60, 9);
         this.game.load.spritesheet('end-screen', 'assets/end-spritesheet.png', 60, 60);
 
         this.tileFactory = new Tiles.TileFactory(this.game, 'tile');
@@ -177,36 +179,25 @@ class SimpleGame {
         this.endScreenSprite = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'end-screen', 2, this.menuGroup);
         this.endScreenSprite.animations.add('loop', [2, 3, 4, 5, 6, 7, 8, 9], 15, true);
 
-        this.menuSprite1 = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'main-menu', 0, this.menuGroup);
-        this.menuSprite1.visible = false;
-        this.menuSprite1.animations.add('snake', [
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            1, 1, 1, 1,
-            2, 2, 2, 2,
-            3, 3, 3, 3,
-            4, 4, 4, 4,
-            5, 5, 5, 5,
-            6, 6, 6, 6,
-            7, 7, 7,
-            8, 8, 8,
-            9, 9, 9, 0], 40, true);
+        this.menuSprite = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'main-menu', 0, this.menuGroup);
+        this.menuSprite.visible = false;
 
-        this.menuSprite2 = this.game.add.sprite(BOARD_SHIFT, BOARD_SHIFT, 'main-menu-2', 0, this.menuGroup);
-        this.menuSprite2.visible = false;
-        this.menuSprite2.animations.add('snake', [
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            1, 1, 1, 1,
-            2, 2, 2, 2,
-            3, 3, 3, 3,
-            4, 4, 4, 4,
-            5, 5, 5, 5,
-            6, 6, 6, 6,
-            7, 7, 7,
-            8, 8, 8, 0], 40, true);
+        let fps = 10;
+        let a;
 
-        this.menuSprite = this.menuSprite2;
+        a = 0;
+        let a1 = this.menuSprite.animations.add('snake-1', [a + 0, a + 1, a + 2, a + 3, a + 4, a + 5, a + 6, a + 7, a + 8, a + 9, a + 10, a + 11, a], fps, false);
+
+        a = 12;
+        let a2 = this.menuSprite.animations.add('snake-2', [a + 0, a + 1, a + 2, a + 3, a + 4, a + 5, a + 6, a + 7, a + 8, a + 9, a + 10, a + 11, a], fps, false);
+
+        a = 24;
+        let a3 = this.menuSprite.animations.add('snake-3', [a + 0, a + 1, a + 2, a + 3, a + 4, a + 5, a + 6, a + 7, a + 8, a + 9, a + 10, a + 11, a], fps, false);
+
+        a = 36;
+        let a4 = this.menuSprite.animations.add('snake-4', [a + 0, a + 1, a + 2, a + 3, a + 4, a + 5, a + 6, a + 7, a + 8, a + 9, a + 10, a + 11, a], fps, false);
+
+        this.snakes = [a1, a2, a3, a4];
 
         this.static = this.game.add.audio('static', ENDSCREEN_STATIC_VOLUME, true);
 
@@ -290,13 +281,10 @@ class SimpleGame {
 
             this.menuSprite.animations.stop();
             this.menuSprite.animations.frame = 0;
-            this.menuSprite.animations.play('snake');
-            this.lastAnimatonPlayTime = now;
 
             this.gameState = GameState.UpdateMenu;
         }
 
-        //if (this.nextNoteTime == 0 && this.soundReady)
         if (this.nextNoteTime == 0)
         {
             this.nextNoteTime = now + 500;
@@ -305,36 +293,22 @@ class SimpleGame {
         if (this.nextNoteTime > 0 && now > this.nextNoteTime) {
             this.playRandomNote(MENU_SOUND_VOLUME);
             this.nextNoteTime = now + this.randomInt(MENU_SOUND_REPEAT_MIN_DELAY, MENU_SOUND_REPEAT_MAX_DELAY);
-        }
 
-        //if (this.nextNoteTime - now < 500 && now - this.lastAnimatonPlayTime > 1300) {
-        //    this.menuSprite.animations.stop();
-        //    this.menuSprite.animations.frame = 0;
-        //    this.menuSprite.animations.play('snake');
-        //    this.lastAnimatonPlayTime = now;
-        //}
+            if (this.lastAnimatonPlayTime == 0 || now - this.lastAnimatonPlayTime > 1300) {
+                this.menuSprite.animations.stop();
+                this.menuSprite.animations.frame = 0;
 
-        if (this.game.input.keyboard.isDown(Phaser.KeyCode.B))
-        {
-            this.menuSprite.animations.stop();
-            this.menuSprite.animations.frame = 0;
+                let newSnakeIdx = this.randomInt(this.snakes.length);
+                if (newSnakeIdx == this.lastSnakeIndex)
+                {
+                    newSnakeIdx = (newSnakeIdx + 1) & this.snakes.length;
+                }
 
-            if (this.menuSprite == this.menuSprite1) {
-                this.menuSprite = this.menuSprite2;
+                this.lastSnakeIndex = newSnakeIdx;
+                this.snakes[newSnakeIdx].play();
 
-                this.menuSprite1.visible = false;
-                this.menuSprite2.visible = true;
+                this.lastAnimatonPlayTime = now;
             }
-            else {
-                this.menuSprite = this.menuSprite1;
-
-                this.menuSprite1.visible = true;
-                this.menuSprite2.visible = false;
-            }
-
-            this.menuSprite.animations.play('snake');
-
-            this.game.input.keyboard.reset(false);
         }
 
         let point = this.getTapPoint();
