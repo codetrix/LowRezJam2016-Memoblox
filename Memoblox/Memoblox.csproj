@@ -49,6 +49,7 @@
     <Content Include="assets\audio\background03.ogg" />
     <Content Include="assets\audio\background04.ogg" />
     <Content Include="assets\audio\background05.ogg" />
+    <Content Include="assets\audio\wrong.ogg" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

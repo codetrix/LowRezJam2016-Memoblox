@@ -42,6 +42,12 @@ enum ColorMode {
     DOUBLE
 }
 
+const MENU_SOUND_VOLUME = 1;
+const PATH_SOUND_VOLUME = 0.4;
+const INGAME_SOUND_VOLUME = 0.4;
+const INGAME_WRONG_SOUND_VOLUME = 0.2;
+const ENDSCREEN_STATIC_VOLUME = 0.6;
+
 const LEVELS = [
     { level: 1, pathLength: 3, gridSize: 3, colorMode: ColorMode.PLENTY },
     { level: 2, pathLength: 4, gridSize: 4, colorMode: ColorMode.PLENTY },
@@ -88,6 +94,7 @@ class SimpleGame {
 
     private soundReady: boolean = false;
     private static: Phaser.Sound;
+    private wrong: Phaser.Sound;
 
     private notes: Array<Phaser.Sound>;
     private lastNoteIdx: number = -1;
@@ -122,6 +129,7 @@ class SimpleGame {
 
     preload()
     {
+        this.game.load.audio('wrong', ['assets/audio/wrong.ogg']);
         this.game.load.audio('static', ['assets/audio/static.ogg']);
         this.game.load.audio('note-1', 'assets/audio/background01.ogg');
         this.game.load.audio('note-2', 'assets/audio/background02.ogg');
@@ -188,26 +196,31 @@ class SimpleGame {
 
         this.menuSprite = this.menuSprite2;
 
-        this.static = this.game.add.audio('static', 0.6, true);
-        this.static.loop = true;
+        this.static = this.game.add.audio('static', ENDSCREEN_STATIC_VOLUME, true);
+
+        this.wrong = this.game.add.audio('wrong');
 
         this.notes = [
-            this.game.add.audio('note-1'),
-            this.game.add.audio('note-2'),
-            this.game.add.audio('note-3'),
             this.game.add.audio('note-4'),
-            this.game.add.audio('note-5')
+            this.game.add.audio('note-1'),
+            this.game.add.audio('note-5'),
+            this.game.add.audio('note-2'),
+            this.game.add.audio('note-3')
         ];
+
+        let allSounds = this.notes.slice();
+        allSounds.push(this.static);
+        allSounds.push(this.wrong);
 
         //  Using setDecodedCallback we can be notified when ALL sounds are ready for use.
         //  The audio files could decode in ANY order, we can never be sure which it'll be.
-        this.game.sound.setDecodedCallback([this.static], this.onSoundDecoded, this);
+        this.game.sound.setDecodedCallback(allSounds, this.onSoundDecoded, this);
     }
 
     private onSoundDecoded()
     {
         this.soundReady = true;
-        console.log("Decoded");
+        console.log("All Sounds Decoded");
     }
 
     update(game)
@@ -267,23 +280,14 @@ class SimpleGame {
             this.gameState = GameState.UpdateMenu;
         }
 
-        if (this.nextNoteTime == 0 && this.soundReady)
+        //if (this.nextNoteTime == 0 && this.soundReady)
+        if (this.nextNoteTime == 0)
         {
             this.nextNoteTime = this.game.time.now + 500;
         }
 
         if (this.nextNoteTime > 0 && this.game.time.now > this.nextNoteTime) {
-            let nextNoteIndex = this.randomInt(this.notes.length);
-            if (nextNoteIndex == this.lastNoteIdx)
-            {
-                nextNoteIndex = (nextNoteIndex + 1) % this.notes.length;
-            }
-
-            let note = this.notes[nextNoteIndex];
-            this.lastNoteIdx = nextNoteIndex;
-            
-            note.play();
-
+            this.playRandomNote(MENU_SOUND_VOLUME);
             this.nextNoteTime = this.game.time.now + this.randomInt(500, 7000);
         }
 
@@ -325,8 +329,6 @@ class SimpleGame {
         let point = this.getTapPoint();
         if (point != null)
         {
-            this.game.sound.stopAll();
-
             this.gameState = GameState.NextLevel;
         }
     }
@@ -341,13 +343,8 @@ class SimpleGame {
             this.menuSprite.visible = false;
             this.endScreenSprite.visible = true;
 
-            if (this.soundReady) {
-                if (this.static.isPlaying) {
-                    this.static.stop();
-                }
-
-                this.static.play();
-            }
+            this.game.sound.stopAll();
+            this.static.play();
 
             this.endScreenSprite.animations.stop();
             this.endScreenSprite.animations.frame = 0;
@@ -441,6 +438,9 @@ class SimpleGame {
                 this.boardGroup.visible = true;
                 this.overlay.visible = true;
 
+                this.lastNoteIdx = -1;
+                this.game.sound.stopAll();
+
                 this.board.softReset();
                 this.path.restart();
                 this.pathLastUpdate = 0;
@@ -462,6 +462,8 @@ class SimpleGame {
                         let tile = this.path.current;
                         this.path.next();
 
+                        this.playNextNote(PATH_SOUND_VOLUME);
+
                         this.overlay.borderTint = tile.tile.borderTint;
                         this.overlay.backgroundTint = tile.tile.backgroundTint;
                         this.overlay.tileTint = tile.tile.tileTint;
@@ -482,6 +484,8 @@ class SimpleGame {
             case GameState.ShowBoard:
                 this.overlay.visible = false;
                 this.boardGroup.visible = true;
+
+                this.lastNoteIdx = -1;
 
                 this.game.input.enabled = true;
                 this.resetInput();
@@ -515,6 +519,8 @@ class SimpleGame {
 
                         tile.tile.correct();
 
+                        this.playNextNote(INGAME_SOUND_VOLUME);
+
                         if (this.board.restartTile != null)
                         {
                             this.board.restartTile.tile.stop();
@@ -534,6 +540,8 @@ class SimpleGame {
                         if (this.board.restartTile == null) {
                             this.board.restartTile = tile;
                             tile.tile.restart();
+
+                            this.wrong.play(null, null, INGAME_WRONG_SOUND_VOLUME);
                         }
                         else if (tile == this.board.restartTile)
                         {
@@ -541,6 +549,8 @@ class SimpleGame {
                         }
                         else {
                             tile.tile.wrong();
+
+                            this.wrong.play(null, null, INGAME_WRONG_SOUND_VOLUME);
                         }
 
                         // wrong
@@ -577,6 +587,23 @@ class SimpleGame {
                 }
                 break;
         }
+    }
+
+    private playRandomNote(volume: number)
+    {
+        let nextNoteIndex = this.randomInt(this.notes.length);
+        if (nextNoteIndex == this.lastNoteIdx) {
+            nextNoteIndex = (nextNoteIndex + 1) % this.notes.length;
+        }
+
+        this.lastNoteIdx = nextNoteIndex;
+        this.notes[nextNoteIndex].play(null, null, volume);
+    }
+
+    private playNextNote(volume: number)
+    {
+        this.lastNoteIdx = (this.lastNoteIdx + 1) % this.notes.length;
+        this.notes[this.lastNoteIdx].play(null, null, volume);
     }
 
     private resetInput(buttons: boolean = true, movement: boolean = true)
@@ -798,8 +825,8 @@ class SimpleGame {
 
                 let button = this.game.add.sprite(0, 0, 'tile-icons');
                 button.animations.add('correct', [1, 2, 1, 2, 1, 0], 2, false);
-                button.animations.add('wrong', [3, 4, 3, 4, 3, 0], 2, false);
-                button.animations.add('restart', [3, 4, 3, 4, 3, 5], 2, false);
+                button.animations.add('wrong', [4, 3, 3, 4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 0], 10, false);
+                button.animations.add('restart', [4, 3, 3, 4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5], 10, false);
 
                 tile.setOverlay(button);
 
