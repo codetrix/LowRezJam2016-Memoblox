@@ -90,6 +90,7 @@ class SimpleGame {
     private static: Phaser.Sound;
 
     private notes: Array<Phaser.Sound>;
+    private lastNoteIdx: number = -1;
     private nextNoteTime: number = 0;
 
     private nextLevelTime: number;
@@ -248,7 +249,8 @@ class SimpleGame {
             this.level = -1;
 
             this.game.sound.stopAll();
-            this.nextNoteTime == 0
+            this.lastNoteIdx = -1;
+            this.nextNoteTime = 0;
 
             this.boardGroup.visible = false;
             this.menuGroup.visible = true;
@@ -271,10 +273,18 @@ class SimpleGame {
         }
 
         if (this.nextNoteTime > 0 && this.game.time.now > this.nextNoteTime) {
-            let note = this.notes[this.randomInt(this.notes.length)];
+            let nextNoteIndex = this.randomInt(this.notes.length);
+            if (nextNoteIndex == this.lastNoteIdx)
+            {
+                nextNoteIndex = (nextNoteIndex + 1) % this.notes.length;
+            }
+
+            let note = this.notes[nextNoteIndex];
+            this.lastNoteIdx = nextNoteIndex;
+            
             note.play();
 
-            this.nextNoteTime = this.game.time.now + this.randomInt(500, 3000);
+            this.nextNoteTime = this.game.time.now + this.randomInt(500, 7000);
         }
 
         if (this.game.input.keyboard.isDown(Phaser.KeyCode.B))
